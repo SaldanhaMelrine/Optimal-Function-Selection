@@ -1,5 +1,5 @@
 from sqlalchemy.orm import sessionmaker
-from src.database import engine, TrainingData, IdealFunctions, TestData
+from src.database import engine, TrainingData, IdealFunctions, TestDataModel
 from data_loader import load_training_data, load_ideal_functions, load_test_data
 from data_processor import select_ideal_functions, map_test_data
 from data_visualizer import plot_data
@@ -40,7 +40,7 @@ def main():
 
     # Step 5: Retrieve test functions data in dictionary format for visualization
     with SessionLocal() as session:
-        test_data = session.query(TestData).all()
+        test_data = session.query(TestDataModel).all()
         test_df = {
             'x': [row.x for row in test_data],
             'y': [row.y for row in test_data]

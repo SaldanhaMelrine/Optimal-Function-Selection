@@ -1,6 +1,6 @@
 import numpy as np
 from sqlalchemy.orm import Session
-from src.database import TestData, TrainingData, IdealFunctions, engine
+from src.database import TestDataModel, TrainingData, IdealFunctions,MappedTestData, engine
 
 def select_ideal_functions():
     """Select ideal functions that best fit each training function based on the Least Squares method."""
@@ -56,7 +56,7 @@ def map_test_data(selected_functions, training_df, tolerance=1e-5):
     mappings = []
     with Session(engine) as session:
         # Load test data and ideal functions from the database
-        test_data = session.query(TestData).all()
+        test_data = session.query(TestDataModel).all()
         ideal_data = session.query(IdealFunctions).all()
 
         # Convert ideal data to dictionary for easy access
@@ -93,23 +93,28 @@ def map_test_data(selected_functions, training_df, tolerance=1e-5):
                 # Update best mapping if this one has a smaller error
                 if mapping_error < min_error:
                     min_error = mapping_error
-                    best_mapping = {
-                        'x': x_test,
-                        'y': y_test,
-                        'ideal_function': ideal_key,
-                        'ideal_y': ideal_y_value,
-                        'error': mapping_error
-                    }
+                    if min_error < np.sqrt(2):
+                        best_mapping = {
+                            'x': x_test,
+                            'y': y_test,
+                            'ideal_function_id': ideal_key,  # assuming ideal_key corresponds to an ID
+                            'deviation': mapping_error
+                        }
 
-            # Append only the best mapping for this test point
+            # Append and save the best mapping for this test point
             if best_mapping:
                 mappings.append(best_mapping)
-                print(f"Best mapping for x_test={x_test}, y_test={y_test}: ideal_function={best_mapping['ideal_function']}, ideal_y={best_mapping['ideal_y']}, error={best_mapping['error']}")  # Debugging checkpoint
+                # Insert mapping into database
+                mapped_data = MappedTestData(
+                    x=best_mapping['x'],
+                    y=best_mapping['y'],
+                    ideal_function_id=best_mapping['ideal_function_id'],
+                    deviation=best_mapping['deviation']
+                )
+                session.add(mapped_data)
+                print(f"Best mapping for x_test={x_test}, y_test={y_test}: ideal_function_id={mapped_data.ideal_function_id}, deviation={mapped_data.deviation}")
 
-    # Display final mappings for validation
-    print("Final Mappings found:")
-    for mapping in mappings:
-        print(mapping)
-    
+        # Commit all mapped data to the database
+        session.commit()
+
     return mappings
-

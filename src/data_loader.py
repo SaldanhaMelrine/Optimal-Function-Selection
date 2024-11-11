@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy.orm import sessionmaker
-from src.database import engine, TrainingData, IdealFunctions, TestData
+from src.database import engine, TrainingData, IdealFunctions, TestDataModel
 
 # Set up the SQLAlchemy session
 Session = sessionmaker(bind=engine)
@@ -82,13 +82,13 @@ def load_ideal_functions(session, ideal_file_path):
     session.commit()  
 
 def load_test_data(session, test_file_path):
-    """Load test data from an Excel file into the TestData table."""
+    """Load test data into the TestDataModel table."""
     data = pd.read_csv(test_file_path)
-    with Session() as session:
-        for index, row in data.iterrows():
-            test_data = TestData(
-                x=row['x'],
-                y=row['y']
-            )
-            session.add(test_data)
-        session.commit()
+    for index, row in data.iterrows():
+        test_data = TestDataModel(
+            x=row['x'],
+            y=row['y']
+        )
+        session.add(test_data)
+    session.commit()  # Use the passed session to commit changes
+

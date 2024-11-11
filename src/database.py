@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, Float, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
 # SQLite database connection
@@ -76,16 +76,25 @@ class IdealFunctions(Base):
     y50 = Column(Float, nullable=False)
 
 # Table for the test data
-class TestData(Base):
+class TestDataModel(Base):
     __tablename__ = 'test_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
     x = Column(Float, nullable=False)
     y = Column(Float, nullable=False)
-    ideal_function_id = Column(Integer, ForeignKey('ideal_functions.id'))  # Optional ForeignKey
-    deviation = Column(Float)  # To store deviation if calculated
+    ideal_function_id = Column(Integer, ForeignKey('ideal_functions.id'))  
+    deviation = Column(Float)  
 
-    # Relationship to link test data to ideal functions
-    ideal_function = relationship("IdealFunctions", backref="test_mappings")
+# Table for Mapped Test Data
+class MappedTestData(Base):
+    __tablename__ = 'mapped_test_data'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    x = Column(Float, nullable=False)
+    y = Column(Float, nullable=False)
+    ideal_function_id = Column(Integer, ForeignKey('ideal_functions.id'))
+    deviation = Column(Float, nullable=False)
+
+    # Relationship to link mapped test data to ideal functions
+    ideal_function = relationship("IdealFunctions", backref="mapped_test_data")
 
 # Create all tables in the database
 Base.metadata.create_all(engine)
