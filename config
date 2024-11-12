@@ -1,0 +1,6 @@
+data_paths:
+  train_data: "data/train.csv"
+  ideal_data: "data/ideal.csv"
+  test_data: "data/test.csv"
+database:
+  filename: "ideal_function_selector.db"
